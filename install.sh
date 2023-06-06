@@ -48,6 +48,7 @@ setgid 65535
 setuid 65535
 flush
 auth strong
+log /usr/local/etc/3proxy/logs/3proxy.log D
 
 users $(awk -F "/" 'BEGIN{ORS="";} {print $1 ":CL:" $2 " "}' ${WORKDATA})
 
