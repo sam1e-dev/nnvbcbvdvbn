@@ -86,7 +86,7 @@ upload_proxy() {
     FUK=$(echo "$SEX" | jq --raw-output '.link')
 
     echo "Proxy is ready! Format IP:PORT:LOGIN:PASS"
-    echo "Download zip archive from: ${URL}"
+    echo "Download zip archive from: ${FUK}"
     echo "Password: ${PASS}"
 
 }
