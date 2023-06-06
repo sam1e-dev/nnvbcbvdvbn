@@ -37,6 +37,7 @@ install_3proxy() {
     chkconfig 3proxy on
     cd $WORKDIR
 }
+
 gen_3proxy() {
     cat <<EOF
 daemon
@@ -46,47 +47,32 @@ timeouts 1 5 30 60 180 1800 15 60
 setgid 65535
 setuid 65535
 flush
-auth none
-$(awk -F "/" '{print "auth none\n" \
+auth strong
+
+users $(awk -F "/" 'BEGIN{ORS="";} {print $1 ":CL:" $2 " "}' ${WORKDATA})
+
+$(awk -F "/" '{print "auth strong\n" \
+"allow " $1 "\n" \
 "proxy -6 -n -a -p" $4 " -i" $3 " -e"$5"\n" \
 "flush\n"}' ${WORKDATA})
 EOF
 }
-# gen_3proxy() {
-#     cat <<EOF
-# daemon
-# maxconn 1000
-# nscache 65536
-# timeouts 1 5 30 60 180 1800 15 60
-# setgid 65535
-# setuid 65535
-# flush
-# auth strong
-
-# users $(awk -F "/" 'BEGIN{ORS="";} {print $1 ":CL:" $2 " "}' ${WORKDATA})
-
-# $(awk -F "/" '{print "auth strong\n" \
-# "allow " $1 "\n" \
-# "proxy -6 -n -a -p" $4 " -i" $3 " -e"$5"\n" \
-# "flush\n"}' ${WORKDATA})
-# EOF
-# }
 
 gen_proxy_file_for_user() {
-    cat >proxy.txt <<EOF
-$(awk -F "/" '{print $3 ":" $4}' ${WORKDATA})
+  cat >proxy.txt <<EOF
+$(awk -F "/" '{print $3 ":" $4 ":" $1 ":" $2 }' ${WORKDATA})
 EOF
 }
 
 upload_proxy() {
     local PASS=$(random)
-    local PASS="dankmemesxdd"
+    local PASS="dankmemes"
     zip --password $PASS proxy.zip proxy.txt
-    SEX=$(curl -F "file=@proxy.zip" https://file.io)
-    FUK=$(echo "$SEX" | jq --raw-output '.link')
+    JSON=$(curl -F "file=@proxy.zip" https://file.io)
+    URL=$(echo "$JSON" | jq --raw-output '.link')
 
     echo "Proxy is ready! Format IP:PORT:LOGIN:PASS"
-    echo "Download zip archive from: ${FUK}"
+    echo "Download zip archive from: ${URL}"
     echo "Password: ${PASS}"
 
 }
@@ -110,7 +96,10 @@ EOF
 
 
 echo "installing apps"
-yum -y install gcc net-tools bsdtar zip >/dev/null
+wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+chmod +x ./jq
+cp jq /usr/bin
+yum -y install gcc net-tools bsdtar make zip >/dev/null
 # currentDir="$(pwd)"
 install_3proxy
 rm -rf /home/proxy-installer
